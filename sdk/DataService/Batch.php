@@ -139,12 +139,11 @@ class Batch {
 	 */
 	public function IntuitBatchResponse($id)
 	{
-		foreach($this->batchResponses as $oneBatchResponse)
+		foreach($this->batchResponses as $bId => $oneBatchResponse)
 		{
-			if ($oneBatchResponse->bId == $id)
+			if ($bId == $id)
 			{
-				$result = ProcessBatchItemResponse($oneBatchResponse);
-				return $result;
+				return $oneBatchResponse;
 			}
 		}
 		return NULL;
@@ -358,14 +357,17 @@ class Batch {
 	        // No JSON support here yet
 			// de serialize object
 			$responseXmlObj = simplexml_load_string($responseBody);
-			foreach($responseXmlObj as $oneXmlObj)
+			foreach($responseXmlObj->BatchItemResponse as $oneXmlObj)
 			{
 				// process batch item
 				$intuitBatchResponse = $this->ProcessBatchItemResponse($oneXmlObj);
 				$this->intuitBatchItemResponses[] = $intuitBatchResponse;
 				
 				if ($intuitBatchResponse && $intuitBatchResponse->entities && count($intuitBatchResponse->entities))
-					$this->batchResponses[] = $intuitBatchResponse->entities;
+					$this->batchResponses[$intuitBatchResponse->batchItemId] = $intuitBatchResponse->entities;
+
+				if ( $intuitBatchResponse && $intuitBatchResponse->entity )
+					$this->batchResponses[$intuitBatchResponse->batchItemId] = $intuitBatchResponse->entity;
 			}
 		}
 		catch (Exception $e) {
@@ -493,6 +495,12 @@ class Batch {
 		
 		$firstChildName = (string)$firstChild->getName();
 		
+		foreach( $oneXmlObj->attributes() as $a => $b )
+		{
+			if( $a == 'bId' )
+				$result->batchItemId = (string) $b[0];
+		}
+
 		if(0 !== strcmp("Fault",$firstChildName))
 		{
 			if ('QueryResponse'==$firstChildName)
@@ -501,7 +509,7 @@ class Batch {
 				{
 				    $result->responseType = ResponseType::Query;
 					$oneEntity = $this->responseSerializer->Deserialize('<RestResponse>'.$oneResponse->asXML().'</RestResponse>');
-					$result->AddEntities($oneEntity);
+					$result->AddEntities($oneEntity[0]);
 				}
 			}
 			else
