@@ -69,7 +69,7 @@ class Bind extends Common {
         
         $className = $this->urnToPhpName($ns)."\\".$this->classPrefix.$name;
         
-        if (!class_exists($className)) {
+        if (!this->safeClassExists($className)) {
             throw new \RuntimeException('Class '.$className. ' is not found. Make sure it was included');
         }
         
@@ -156,7 +156,8 @@ class Bind extends Common {
                 if (!property_exists($model, $name)) {
                     throw new \RuntimeException("Model ".get_class($model)." does not have property ".$name);
                 }
-                if (!class_exists($className)) {
+                
+                if (!$this->safeClassExists($className)) {
                     //print_r($className."\n");
                     $propertyDocs = $refl->getProperty($name)->getDocComment();
                     $docs = $this->parseDocComments($propertyDocs);
@@ -200,7 +201,7 @@ class Bind extends Common {
     public function bindXmlRec($node, $dom, $modelName) {
         $model = '';
         
-        if (class_exists($modelName)) {
+        if ($this->safeClassExists($modelName)) {
             $model = new $modelName();
         } else {
             throw new \RuntimeException('Class '.$modelName.' does not exist');
@@ -220,7 +221,7 @@ class Bind extends Common {
                 if (!property_exists($model, $child->nodeName)) {
                     throw new \RuntimeException("Model does not have property ".$child->nodeName);
                 }
-               if (!class_exists($child->nodeName)) {
+               if (!$this->safeClassExists($child->nodeName)) {
                     $propertyDocs = $refl->getProperty($child->nodeName)->getDocComment();
                     $docs = $this->parseDocComments($propertyDocs);
                     $type = $docs['xmlType'];
@@ -243,5 +244,15 @@ class Bind extends Common {
         
     }
     
+    public function safeClassExists( $className, $autoload = true )
+    {
+        try {
+            $class_exists_comparison = class_exists( $className, $autoload );
+        }catch( Exception $e ){
+            $class_exists_comparison = false;
+        }
+
+        return $class_exists_comparison;
+    }
     
 }
