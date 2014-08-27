@@ -21,7 +21,7 @@ class XmlObjectSerializer extends IEntitySerializer {
 	 * @param POPOObject $phpObj inbound POPO object
 	 * @return string XML output derived from POPO object 
 	 */
-	private function getXmlFromObj($phpObj)
+	private static function getXmlFromObj($phpObj)
 	{
 		if (!$phpObj)
 		{
