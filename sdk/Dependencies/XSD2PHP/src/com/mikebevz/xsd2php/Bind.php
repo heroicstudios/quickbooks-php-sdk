@@ -69,7 +69,7 @@ class Bind extends Common {
         
         $className = $this->urnToPhpName($ns)."\\".$this->classPrefix.$name;
         
-        if (!this->safeClassExists($className)) {
+        if (!$this->safeClassExists($className)) {
             throw new \RuntimeException('Class '.$className. ' is not found. Make sure it was included');
         }
         
