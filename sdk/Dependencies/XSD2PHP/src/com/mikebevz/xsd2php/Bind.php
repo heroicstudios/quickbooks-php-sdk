@@ -247,7 +247,7 @@ class Bind extends Common {
     public function safeClassExists( $className, $autoload = true )
     {
         try {
-            $class_exists_comparison = class_exists( $className, $autoload );
+            $class_exists_comparison = @class_exists( $className, $autoload );
         }catch( Exception $e ){
             $class_exists_comparison = false;
         }
