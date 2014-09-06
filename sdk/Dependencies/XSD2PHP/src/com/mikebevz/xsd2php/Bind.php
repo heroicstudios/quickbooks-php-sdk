@@ -99,6 +99,16 @@ class Bind extends Common {
         $refl  = new \ReflectionClass(get_class($model));
         $xpath = new \DOMXPath($this->dom);
         
+        $query = ".";
+        $childs = $xpath->query($query);
+        foreach( $childs->item(0)->attributes as $attribute_name => $attribute_node )
+        {
+            if( property_exists($model, $attribute_name) )
+            {
+                $model->{$attribute_name} = $attribute_node->nodeValue;
+            }
+        }
+        
         $query = "child::*";
         $childs = $xpath->query($query);
         
