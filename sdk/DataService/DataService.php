@@ -555,8 +555,10 @@ class DataService
 	 * @param string $pageSize Page size
 	 * @return array Returns an array of entities fulfilling the query. 
 	 */	
-	public function Query($query, $pageNumber=0, $pageSize=500)
+	public function Query($query, $pageNumber=1, $pageSize=500)
 	{
+		$pagingOffset = ( ( $pageNumber <= 1 ? 0 : $pageNumber - 1 ) * $pageSize ) + 1; // one-based numbering fun!
+
 		$this->serviceContext->IppConfiguration->Logger->RequestLog->Log(TraceLevel::Info, "Called Method Query.");
 	
 		if ('QBO'==$this->serviceContext->serviceType)
@@ -568,7 +570,7 @@ class DataService
 
 		// Original API ignored paging parameters as of v2.0.4
 		if( stripos( $query, 'startPosition' ) === false )
-			$httpsPostBody = $query . " startPosition $pageNumber maxResults $pageSize";
+			$httpsPostBody = $query . " startPosition $pagingOffset maxResults $pageSize";
 		else
 			$httpsPostBody = $query;
 
@@ -594,8 +596,10 @@ class DataService
 	 * @param string $urlResource Entity type to Find
 	 * @return array Returns an array of entities of specified type. 
 	 */	
-	public function FindAll($entityName, $pageNumber=0, $pageSize=500)
+	public function FindAll($entityName, $pageNumber=1, $pageSize=500)
 	{
+		$pagingOffset = ( ( $pageNumber <= 1 ? 0 : $pageNumber - 1 ) * $pageSize ) + 1; // one-based numbering fun!
+
 		$this->serviceContext->IppConfiguration->Logger->RequestLog->Log(TraceLevel::Info, "Called Method FindAll.");
 
 		$phpClassName = DataService::decorateIntuitEntityToPhpClassName($entityName);
@@ -610,7 +614,7 @@ class DataService
 			$httpsContentType = CoreConstants::CONTENTTYPE_TEXTPLAIN;
 
 		$httpsUri = implode(CoreConstants::SLASH_CHAR,array('company', $this->serviceContext->realmId, 'query'));
-		$httpsPostBody = "select * from $entityName startPosition $pageNumber maxResults $pageSize";
+		$httpsPostBody = "select * from $entityName startPosition $pagingOffset maxResults $pageSize";
 
 		$requestParameters = new RequestParameters($httpsUri, 'POST', $httpsContentType, NULL);
 		$restRequestHandler = new SyncRestHandler($this->serviceContext);
