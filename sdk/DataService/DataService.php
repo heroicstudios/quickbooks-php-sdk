@@ -565,7 +565,12 @@ class DataService
 			$httpsContentType = CoreConstants::CONTENTTYPE_TEXTPLAIN;
 		
 		$httpsUri = implode(CoreConstants::SLASH_CHAR,array('company', $this->serviceContext->realmId, 'query'));
-		$httpsPostBody = $query;
+
+		// Original API ignored paging parameters as of v2.0.4
+		if( stripos( $query, 'startPosition' ) === false )
+			$httpsPostBody = $query . " startPosition $pageNumber maxResults $pageSize";
+		else
+			$httpsPostBody = $query;
 
 		$requestParameters = new RequestParameters($httpsUri, 'POST', $httpsContentType, NULL);
 		$restRequestHandler = new SyncRestHandler($this->serviceContext);
